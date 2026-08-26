@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>荒野南三 戶外探勘 保險 登記系統</title>
+    <title>荒野南三戶外探勘保險登記系統</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" rel="stylesheet">
     <style>
         :root {
@@ -290,7 +290,7 @@
 </head>
 <body>
     <div class="container animate__animated animate__fadeInUp">
-        <h2>荒野南三 戶外探勘 保險 登記系統</h2>
+        <h2>荒野南三探勘保險登記系統</h2>
         
         <div class="step-group" style="animation-delay: 0.1s">
             <label>Step1. 請選擇您所屬的小隊：</label>
@@ -487,7 +487,15 @@
             }
 
             const selectedIdCards = Array.from(checkboxes).map(cb => cb.value);
-            const selectedMembers = rawData.filter(m => selectedIdCards.includes(m.idCard));
+            // 過濾 rawData，並確保選取的成員不會因為一人多職而重複
+            const rawSelectedMembers = rawData.filter(m => selectedIdCards.includes(m.idCard));
+            const uniqueSelectedMembersMap = new Map();
+            rawSelectedMembers.forEach(m => {
+                if (!uniqueSelectedMembersMap.has(m.idCard)) {
+                    uniqueSelectedMembersMap.set(m.idCard, m);
+                }
+            });
+            const selectedMembers = Array.from(uniqueSelectedMembersMap.values());
             
             const familyId = selectedMembers[0].id;
             const allFamilyMembers = rawData.filter(m => String(m.id) === String(familyId));
