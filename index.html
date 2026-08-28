@@ -345,6 +345,14 @@
             return (currentROCYear - year) >= 15;
         }
 
+        function isLegalAdult(birthStr) {
+            if (!birthStr) return false;
+            const yearStr = String(birthStr).split('.')[0];
+            const year = parseInt(yearStr);
+            if(isNaN(year)) return false;
+            return (currentROCYear - year) >= 18;
+        }
+
         function formatBirthTo7Digits(birthStr) {
             if (!birthStr) return '';
             const parts = String(birthStr).split('.');
@@ -503,9 +511,9 @@
             const familyId = selectedMembers[0].id;
             const allFamilyMembers = rawData.filter(m => String(m.id) === String(familyId));
             
-            const adultMales = allFamilyMembers.filter(m => isAdult(m.birth) && m.gender === '男');
-            const adultFemales = allFamilyMembers.filter(m => isAdult(m.birth) && m.gender === '女');
-            const parent = adultMales.length > 0 ? adultMales[0] : (adultFemales.length > 0 ? adultFemales[0] : null);
+            const legalAdultMales = allFamilyMembers.filter(m => isLegalAdult(m.birth) && m.gender === '男');
+            const legalAdultFemales = allFamilyMembers.filter(m => isLegalAdult(m.birth) && m.gender === '女');
+            const parent = legalAdultMales.length > 0 ? legalAdultMales[0] : (legalAdultFemales.length > 0 ? legalAdultFemales[0] : null);
 
             let totalFee = 0;
             const formattedData = [];
@@ -517,10 +525,11 @@
                     memberFee = 35;
                 }
 
-                const isAd = isAdult(member.birth);
+                const isAd = isAdult(member.birth); // >= 15歲 (決定 TA/CTA)
+                const isLegalAd = isLegalAdult(member.birth); // >= 18歲 (決定是否需要填寫家長)
                 let relation = '';
                 
-                if (!isAd && parent) {
+                if (!isLegalAd && parent) {
                     if (parent.gender === '男') {
                         relation = member.gender === '男' ? '父子' : '父女';
                     } else {
@@ -535,17 +544,17 @@
                     '出生日期(民國年)': formatBirthTo7Digits(member.birth),
                     '國籍': '中華民國',
                     '性別': member.gender,
-                    '(1) 計畫別': isAd ? 'TA' : 'CTA',
+                    '(1) 計畫別': isAd ? 'TA' : 'CTA', // 以 15 歲為界
                     '(2) AT1保額': isAd ? 100 : '',
                     '(3) MR保額': isAd ? 10 : '',
                     '(4) MRC保額': isAd ? 0 : 10,
                     '(5) OH1保額': '',
                     '(6) OAA附約': '',
-                    '家長姓名': isAd ? '' : (parent ? parent.name : ''),
-                    '與被保人關係': isAd ? '' : relation,
+                    '家長姓名': isLegalAd ? '' : (parent ? parent.name : ''), // 以下皆以 18 歲為界
+                    '與被保人關係': isLegalAd ? '' : relation,
                     '家長國籍': '中華民國',
-                    '家長身分證號': isAd ? '' : (parent ? parent.idCard : ''),
-                    '家長出生日期': isAd ? '' : (parent ? formatBirthTo7Digits(parent.birth) : ''),
+                    '家長身分證號': isLegalAd ? '' : (parent ? parent.idCard : ''),
+                    '家長出生日期': isLegalAd ? '' : (parent ? formatBirthTo7Digits(parent.birth) : ''),
                     '是否受有監護宣告': '否',
                     '保險費用': memberFee
                 });
@@ -572,22 +581,42 @@
                 headers: {
                     'Content-Type': 'text/plain;charset=utf-8',
                 },
+                redirect: 'follow',
                 body: JSON.stringify(formattedData)
             })
-            .then(response => response.text()) // 假設您的 GAS 回傳純文字，例如 "Success"
+            .then(response => {
+                if(!response.ok) throw new Error("Network response was not ok");
+                return response.text();
+            })
             .then(result => {
                 console.log("伺服器回傳結果:", result);
-                
-                // 成功送出後顯示彈窗與總金額
-                document.getElementById('totalFeeDisplay').innerText = `$${totalFee}`;
-                document.getElementById('successModal').classList.add('active');
+                if (result.includes("Success")) {
+                    // Try to extract fee from result if backend returns it like "Success, Fee: 70"
+                    // But for simplicity, frontend can still calculate the fee just for display
+                    let totalFee = 0;
+                    const selectedMembers = rawData.filter(m => selectedIdCards.includes(m.idCard));
+                    const uniqueSelectedMembersMap = new Map();
+                    selectedMembers.forEach(m => {
+                        if (!uniqueSelectedMembersMap.has(m.idCard)) {
+                            uniqueSelectedMembersMap.set(m.idCard, m);
+                        }
+                    });
+                    Array.from(uniqueSelectedMembersMap.values()).forEach(m => {
+                        if (feeRoles.includes(m.role)) totalFee += 35;
+                    });
+                    
+                    document.getElementById('totalFeeDisplay').innerText = `$${totalFee}`;
+                    document.getElementById('successModal').classList.add('active');
+                } else {
+                    alert("⚠️ 寫入失敗，請檢查 Console 了解詳細原因。");
+                    console.error("後端錯誤內容:", result);
+                }
             })
             .catch(error => {
                 console.error('送出失敗:', error);
                 alert('資料送出失敗，請檢查網路連線或稍後再試。');
             })
             .finally(() => {
-                // 恢復按鈕狀態
                 submitBtn.innerText = originalBtnText;
                 submitBtn.disabled = false;
             });
