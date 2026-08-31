@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>荒野南三 戶外探勘 保險 登記系統</title>
+    <title>探勘保險登記</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" rel="stylesheet">
     <style>
         :root {
@@ -297,7 +297,7 @@
 </head>
 <body>
     <div class="container animate__animated animate__fadeInUp">
-        <h2>🍀荒野南三登記探勘保險</h2>
+        <h2>🍀南三探勘保險</h2>
         <h4>如果團集會和探勘同一天, 不用再繳交保險費用, 請忽略費用訊息</h4>
         
         <div class="step-group" style="animation-delay: 0.1s">
@@ -311,7 +311,7 @@
         </div>
 
         <div class="step-group" id="familyGroup" style="display: none; animation-delay: 0.3s">
-            <label>Step3. 請勾選要參與戶外探勘且需要保險的家庭成員：</label>
+            <label>Step3. 請勾選要參與探勘且需要保險的成員：</label>
             <div class="member-list" id="familyMembers"></div>
             
             <button class="btn-submit" onclick="submitForm()">送出並計算保費</button>
@@ -327,8 +327,8 @@
                 <div id="selectedNamesDisplay" style="margin: 10px 0; color: #4A90E2; font-weight: bold; font-size: 24px;"></div>
                 本次需繳交之保險總額為：
                 <div class="modal-amount" id="totalFeeDisplay">$0</div>
-                <div class="modal-text">記得要Line Pay或<br>郵局帳號(700)0191304-0205861 青竹絲</div>
-                <small style="color: #999;">匯款後請聯絡青竹絲核對</small>
+                <div class="modal-text">記得要Line Pay or<br>郵局轉帳 青竹絲 <br>匯款帳號請聯絡青竹絲</div>
+                <br>匯款帳號請聯絡青竹絲
             </div>
             <button class="btn-close" onclick="closeModal()">確認</button>
         </div>
