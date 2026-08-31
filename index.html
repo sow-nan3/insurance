@@ -335,7 +335,7 @@
 
     <script>
         // -------------------------------------------------------------------------
-        // 徹底去識別化資料庫（完全無姓名、身分證、生日、性別）
+        // data set
         // -------------------------------------------------------------------------
         const rawData = [
             {"id": 0, "uid": "M_000", "squad": "花叢", "natureName": "甜菜根", "role": "99團", "isAdult": true},
@@ -680,7 +680,7 @@
 
             const allFamilyMembers = rawData.filter(m => String(m.id) === String(selectedFamilyIdValue));
             
-            // 一人多職防呆去重
+            // 一人多職防呆
             const uniqueMembersMap = new Map();
             allFamilyMembers.forEach(m => {
                 if (!uniqueMembersMap.has(m.natureName)) {
@@ -757,7 +757,7 @@
                 }
 
                 // -------------------------------------------------------------
-                // 填入有限資訊，無法推論的個資與保額欄位均填入空字串
+                // push empty info
                 // -------------------------------------------------------------
                 formattedData.push({
                     '自然名': nName,
@@ -786,7 +786,7 @@
             console.table(formattedData);
 
             // -------------------------------------------------------------
-            // Google Apps Script 部署網址
+            // GAS 部署網址
             // -------------------------------------------------------------
             const gasUrl = 'https://script.google.com/macros/s/AKfycbxhgH9HlMfVXSN1iqYstuiYaEbjcD5vcSdtzSniPTCjQbPjKCTUAf2CQXIzj7YGM0mUug/exec';
             
